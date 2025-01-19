@@ -1,0 +1,15 @@
+/* Reset margin and padding for the body */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #1a1a1a; /* Matches app background */
+  color: #d8b4f9; /* Default text color */
+  font-family: Arial, sans-serif; /* Consistent font across app */
+}
+
+/* Ensure the root div spans the full height */
+#root {
+  min-height: 100vh; /* Full viewport height */
+  display: flex;
+  flex-direction: column; /* Support vertical stacking */
+}
