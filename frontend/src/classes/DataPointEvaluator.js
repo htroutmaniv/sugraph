@@ -11,7 +11,6 @@ class DataPointEvaluator {
   calculateGlucose(previousDataPoint, currentDataPoint) {
     const isf = previousDataPoint.insulinSensitivityFactor; // Sensitivity factor
     const cr = previousDataPoint.carbohydrateRatio; // Carbohydrate ratio
-    console.log(`isf: ${isf}`);
     // Calculate the effect of insulin and carbs on glucose
     const insulinEffect =
       currentDataPoint.insulinActivity *
@@ -31,7 +30,6 @@ class DataPointEvaluator {
 
   // Evaluate a timeline of DataPoints sequentially
   evaluateTimeline(timeline) {
-    console.log('Evaluating timeline...');
     for (let i = 1; i < timeline.length; i++) {
       const currentPoint = timeline[i];
       const previousPoint = timeline[i - 1];
@@ -40,14 +38,9 @@ class DataPointEvaluator {
       currentPoint.insulinActivity = this.iobCalculator.calculateTotalActivity(
         currentPoint.timestamp
       );
-      currentPoint.carbsOnBoard = this.cobCalculator.calculateTotalCOB(
+      currentPoint.carbsOnBoard = this.cobCalculator.calculateTotalCarbActivity(
         currentPoint.timestamp
       );
-
-      console.log(
-        `Point ${i}: Timestamp=${currentPoint.timestamp}, IOB=${currentPoint.insulinActivity}, COB=${currentPoint.carbsOnBoard}`
-      );
-
       // Calculate Glucose
       currentPoint.glucose = this.calculateGlucose(previousPoint, currentPoint);
     }
