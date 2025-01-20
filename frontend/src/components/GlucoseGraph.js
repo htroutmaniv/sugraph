@@ -39,6 +39,27 @@ class GlucoseGraph extends React.Component {
     return `${hours}:${minutes}`;
   }
 
+  // Custom Tooltip Component
+  CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const { timestamp, glucose } = payload[0].payload;
+      return (
+        <div
+          style={{
+            backgroundColor: '#555', // Medium gray
+            padding: '10px',
+            borderRadius: '5px',
+            color: '#fff',
+          }}
+        >
+          <p>{`Time: ${this.formatTime(timestamp)}`}</p>
+          <p>{`Glucose: ${glucose} mg/dL`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   // Process data to include normalizedTime
   processData(data) {
     if (!data || data.length === 0) return [];
@@ -68,6 +89,7 @@ class GlucoseGraph extends React.Component {
       this.setState({
         selectedTimestamp: clickedTimestamp,
         dialogOpen: true,
+        clickPosition: { x: e.chartX, y: e.chartY }, // Track click location
       });
     }
   }
@@ -146,7 +168,7 @@ class GlucoseGraph extends React.Component {
         >
           Glucose Levels Over Time
         </Typography>
-        <ResponsiveContainer width='100%' height={400}>
+        <ResponsiveContainer width='100%' height={300}>
           <LineChart
             data={processedData}
             onClick={this.handleGraphClick.bind(this)}
@@ -177,7 +199,7 @@ class GlucoseGraph extends React.Component {
               }}
               tick={{ fill: '#ffffff' }}
             />
-            <Tooltip />
+            <Tooltip content={<this.CustomTooltip />} />
             <Line
               type='monotone'
               dataKey='glucose'
@@ -194,44 +216,99 @@ class GlucoseGraph extends React.Component {
         <Dialog
           open={dialogOpen}
           onClose={() => this.setState({ dialogOpen: false })}
+          PaperProps={{
+            style: {
+              backgroundColor: '#555', // Medium gray background for the dialog box
+              color: '#fff', // White text
+              borderRadius: '8px',
+              padding: '16px',
+            },
+          }}
+          BackdropProps={{
+            style: {
+              backgroundColor: 'transparent', // Remove the overlay background
+            },
+          }}
+          style={{
+            position: 'absolute',
+            top: this.state.clickPosition?.y || '50%', // Position near click
+            left: this.state.clickPosition?.x || '50%',
+            transform: 'translate(-50%, -50%)', // Center around the click
+          }}
         >
-          <DialogTitle>Add Event</DialogTitle>
+          <DialogTitle>
+            <Typography
+              variant='h6'
+              style={{ color: '#2adf93', textAlign: 'center' }} // Mint green title
+            >
+              Add Event
+            </Typography>
+          </DialogTitle>
           <DialogContent>
-            <TextField
-              label='Carbs Consumed'
-              type='number'
-              fullWidth
-              value={eventDetails.carbs}
-              onChange={(e) => {
-                console.log('Carbs Input Change:', e.target.value); // Debug log
-                this.setState({
-                  eventDetails: {
-                    ...eventDetails,
-                    carbs: Number(e.target.value),
-                  },
-                });
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2, // Add spacing between text fields
               }}
-            />
-            <TextField
-              label='Bolus Amount'
-              type='number'
-              fullWidth
-              value={eventDetails.bolus}
-              onChange={(e) =>
-                this.setState({
-                  eventDetails: {
-                    ...eventDetails,
-                    bolus: Number(e.target.value),
+            >
+              <TextField
+                label='Carbs Consumed'
+                type='number'
+                fullWidth
+                value={eventDetails.carbs}
+                onChange={(e) =>
+                  this.setState({
+                    eventDetails: {
+                      ...eventDetails,
+                      carbs: Number(e.target.value),
+                    },
+                  })
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: { color: '#2adf93' }, // Mint green labels
                   },
-                })
-              }
-            />
+                  input: {
+                    style: { color: '#fff' }, // White text for input
+                  },
+                }}
+              />
+              <TextField
+                label='Bolus Amount'
+                type='number'
+                fullWidth
+                value={eventDetails.bolus}
+                onChange={(e) =>
+                  this.setState({
+                    eventDetails: {
+                      ...eventDetails,
+                      bolus: Number(e.target.value),
+                    },
+                  })
+                }
+                slotProps={{
+                  inputLabel: {
+                    style: { color: '#2adf93' }, // Mint green labels
+                  },
+                  input: {
+                    style: { color: '#fff' }, // White text for input
+                  },
+                }}
+              />
+            </Box>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => this.setState({ dialogOpen: false })}>
+            <Button
+              onClick={() => this.setState({ dialogOpen: false })}
+              style={{ color: '#2adf93' }} // Mint green button text
+            >
               Cancel
             </Button>
-            <Button onClick={this.handleEventSubmit.bind(this)} color='primary'>
+            <Button
+              onClick={this.handleEventSubmit.bind(this)}
+              style={{ color: '#2adf93' }} // Mint green button text
+            >
               Add Event
             </Button>
           </DialogActions>

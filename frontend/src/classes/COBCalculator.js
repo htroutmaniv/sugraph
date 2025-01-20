@@ -1,10 +1,11 @@
-import CARBPROFILES from '../enums/CarbProfiles.js';
+import CARBPROFILES from '../enums/CarbProfiles';
 
 class CarbEvent {
   constructor(timestamp, amount, carbProfile = CARBPROFILES.medium) {
     this.timestamp = timestamp || new Date();
     this.amount = amount;
     this.carbProfile = carbProfile;
+    console.log(carbProfile);
   }
 
   isExpired(currentTime, absorptionDuration) {
