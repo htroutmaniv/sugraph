@@ -8,11 +8,7 @@ class App extends Component {
 
     // Initialize the system
     this.initializer = new Initializer({
-      isfSchedule: [
-        { time: '00:00', isf: 50 },
-        { time: '06:00', isf: 45 },
-        { time: '18:00', isf: 60 },
-      ],
+      isfSchedule: [{ time: '00:00', isf: 50 }],
       crSchedule: [
         { time: '00:00', cr: 10 },
         { time: '06:00', cr: 8 },

@@ -1,5 +1,5 @@
 class CarbEvent {
-  constructor({ timestamp, amount }) {
+  constructor(timestamp, amount) {
     this.timestamp = timestamp || new Date();
     this.amount = amount;
   }
@@ -11,16 +11,22 @@ class CarbEvent {
 
   calculateCOB(currentTime, absorptionDuration) {
     const elapsedTime = (currentTime - this.timestamp) / (1000 * 60); // Time in minutes
+    console.log(`elapsed Time: ${elapsedTime}`);
+    console.log(`absorption duration: ${absorptionDuration}`);
+    console.log(this.amount);
     if (elapsedTime < 0 || elapsedTime > absorptionDuration) {
       return 0; // Carbs fully absorbed or invalid case
     }
     // Exponential decay model for carb absorption
-    return this.amount * Math.exp(-elapsedTime / (absorptionDuration / 3));
+    const calculatedValue =
+      this.amount * Math.exp(-elapsedTime / (absorptionDuration / 3));
+    console.log(`calculated carbs: ${calculatedValue}`);
+    return calculatedValue;
   }
 }
 
 class COBCalculator {
-  constructor({ absorptionDuration = 90 } = {}) {
+  constructor(absorptionDuration = 90) {
     this.absorptionDuration = absorptionDuration; // Default absorption duration in minutes (e.g., 1.5 hours)
     this.carbMap = new Map();
   }
@@ -34,6 +40,7 @@ class COBCalculator {
     console.log(`ADDING CARBS: ${carbAmount}`);
     const carbEvent = new CarbEvent(carbId, carbAmount);
     this.carbMap.set(carbId, carbEvent);
+    console.log(`carbMap ${this.carbMap}`);
   }
 
   removeExpiredCarbs(currentTime) {

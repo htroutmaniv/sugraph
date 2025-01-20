@@ -1,4 +1,4 @@
-import IOBCalculator from './IOBCalculator.js';
+import IOBCalculator from './InsulinActivityCalculator.js';
 import { COBCalculator } from './COBCalculator.js';
 
 class DataPointEvaluator {
@@ -8,46 +8,48 @@ class DataPointEvaluator {
   }
 
   // This function calculates the new glucose level based on changes in carbs and insulin
-  calculateGlucose(previousDataPoint, newCarbsOnBoard, newInsulinOnBoard) {
-    const isf = previousDataPoint.insulinSensitivityFactor;
-    const cr = previousDataPoint.carbohydrateRatio;
+  calculateGlucose(previousDataPoint, currentDataPoint) {
+    const isf = previousDataPoint.insulinSensitivityFactor; // Sensitivity factor
+    const cr = previousDataPoint.carbohydrateRatio; // Carbohydrate ratio
+    console.log(`isf: ${isf}`);
+    // Calculate the effect of insulin and carbs on glucose
+    const insulinEffect =
+      currentDataPoint.insulinActivity *
+      currentDataPoint.simulationDuration *
+      -isf; // Negative because insulin reduces glucose
+    const carbEffect =
+      currentDataPoint.carbsOnBoard *
+      currentDataPoint.simulationDuration *
+      (isf / cr); // Positive because carbs increase glucose
 
-    const glucoseChangeFromCarbs = newCarbsOnBoard * (isf / cr); // Glucose impact per gram of carbs
-    const glucoseChangeFromInsulin = newInsulinOnBoard * -isf; // Glucose reduction per unit of insulin
+    // Adjust glucose from the previous data point
+    const newGlucose = previousDataPoint.glucose + insulinEffect + carbEffect;
 
-    return Math.max(
-      previousDataPoint.glucose +
-        glucoseChangeFromCarbs +
-        glucoseChangeFromInsulin,
-      0
-    );
+    // Ensure glucose value is non-negative
+    return Math.max(newGlucose, 0);
   }
 
   // Evaluate a timeline of DataPoints sequentially
   evaluateTimeline(timeline) {
-    console.log('evaluating timeline!');
+    console.log('Evaluating timeline...');
     for (let i = 1; i < timeline.length; i++) {
-      const previousPoint = timeline[i - 1];
       const currentPoint = timeline[i];
+      const previousPoint = timeline[i - 1];
 
-      const newInsulinOnBoard = this.iobCalculator.calculateTotalIOB(
+      // Calculate IOB and COB
+      currentPoint.insulinActivity = this.iobCalculator.calculateTotalActivity(
         currentPoint.timestamp
       );
-      const newCarbsOnBoard = this.cobCalculator.calculateTotalCOB(
+      currentPoint.carbsOnBoard = this.cobCalculator.calculateTotalCOB(
         currentPoint.timestamp
       );
 
-      console.log(`IOB: ${newInsulinOnBoard},  COB: ${newCarbsOnBoard}`);
-      const calculatedGlucose = this.calculateGlucose(
-        previousPoint,
-        newCarbsOnBoard,
-        newInsulinOnBoard
+      console.log(
+        `Point ${i}: Timestamp=${currentPoint.timestamp}, IOB=${currentPoint.insulinActivity}, COB=${currentPoint.carbsOnBoard}`
       );
-      console.log(`calculatedGlucose: ${calculatedGlucose}`);
-      currentPoint.glucose = calculatedGlucose;
 
-      currentPoint.carbsOnBoard = newCarbsOnBoard;
-      currentPoint.insulinOnBoard = newInsulinOnBoard;
+      // Calculate Glucose
+      currentPoint.glucose = this.calculateGlucose(previousPoint, currentPoint);
     }
   }
 }
