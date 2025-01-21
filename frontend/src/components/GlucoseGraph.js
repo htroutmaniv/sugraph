@@ -18,6 +18,8 @@ import {
   TextField,
   Button,
 } from '@mui/material';
+import EventTracking from '../classes/EventTracking';
+import GraphEvent from './GraphEvent';
 
 class GlucoseGraph extends React.Component {
   constructor(props) {
@@ -29,6 +31,8 @@ class GlucoseGraph extends React.Component {
       selectedTimestamp: null,
       eventDetails: { carbs: 0, bolus: 0 },
     };
+
+    this.eventTracker = new EventTracking();
   }
 
   // Format the timestamp into a readable string
@@ -100,8 +104,6 @@ class GlucoseGraph extends React.Component {
     const { selectedTimestamp, eventDetails } = this.state;
     const timeline = data;
 
-    console.log('Event Details on Submit:', eventDetails);
-    console.log('Selected Timestamp on Submit:', selectedTimestamp);
     if (!Array.isArray(timeline)) {
       console.error('Timeline is not an array.');
       return;
@@ -114,6 +116,26 @@ class GlucoseGraph extends React.Component {
       );
 
       if (matchingPoint) {
+        // Determine event type
+        const eventType =
+          eventDetails.carbs > 0 && eventDetails.bolus > 0
+            ? 'both'
+            : eventDetails.carbs > 0
+            ? 'carbs'
+            : eventDetails.bolus > 0
+            ? 'bolus'
+            : null;
+
+        if (eventType) {
+          // Add the event to the EventTracking instance
+          this.eventTracker.addEvent({
+            timestamp: selectedTimestamp,
+            carbs: eventDetails.carbs,
+            bolus: eventDetails.bolus,
+            type: eventType,
+          });
+        }
+
         // Add a carb event if carbs were entered
         if (eventDetails.carbs > 0) {
           dataPointEvaluator.cobCalculator.addCarb(
@@ -142,6 +164,41 @@ class GlucoseGraph extends React.Component {
 
     // Close the dialog
     this.setState({ dialogOpen: false });
+  }
+
+  handleEventDrag(event, newXPosition) {
+    const { data } = this.props;
+
+    const startTime = new Date(data[0].timestamp).getTime();
+    const xDomain = 1440; // Total minutes in a day (24 * 60)
+    const graphWidth = 1000; // Adjust based on your graph's width
+
+    // Calculate new timestamp based on the dragged position
+    const elapsedMinutes = (newXPosition / graphWidth) * xDomain;
+    const newTimestamp = new Date(startTime + elapsedMinutes * 60 * 1000);
+
+    // Update the event's timestamp
+    const updatedEvent = { ...event, timestamp: newTimestamp };
+    this.eventTracker.updateEvent(event, updatedEvent);
+
+    // Re-render the graph
+    this.forceUpdate();
+  }
+
+  renderGraphEvents() {
+    if (!this.eventTracker || this.eventTracker.events.length === 0)
+      return null;
+
+    return this.eventTracker.events.map((event, index) => (
+      <GraphEvent
+        key={index}
+        eventType={event.type}
+        timestamp={event.timestamp}
+        xPos={this.calculateXPosition(event.timestamp)}
+        onDrag={this.handleEventDrag.bind(this)}
+        event={event}
+      />
+    ));
   }
 
   render() {
@@ -209,6 +266,8 @@ class GlucoseGraph extends React.Component {
               dot={false}
               activeDot={{ r: 6 }}
             />
+            {/* Call renderGraphEvents() here to overlay events on the graph */}
+            {this.renderGraphEvents()}
           </LineChart>
         </ResponsiveContainer>
 
