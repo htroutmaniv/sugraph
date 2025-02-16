@@ -27,12 +27,11 @@ class EventTracking {
   }
 
   // Add a new event
-  addEvent(type, time, label, dataPoint) {
+  addEvent(type, time, dataPoint) {
     const newEvent = {
-      id: this.events.length + 1,
+      id: this.events.length,
       type,
       time,
-      label,
       dataPoint,
     };
 

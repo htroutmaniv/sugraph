@@ -30,9 +30,28 @@ class GlucoseGraph extends React.Component {
       dialogOpen: false,
       selectedTimestamp: null,
       eventDetails: { carbs: 0, bolus: 0 },
+      chartWidth: 0,
     };
 
+    this.chartContainerRef = React.createRef();
+
     this.eventTracker = new EventTracking();
+  }
+
+  updateChartWidth = () => {
+    if (this.chartContainerRef.current) {
+      const width = this.chartContainerRef.current.offsetWidth;
+      this.setState({ chartWidth: width });
+    }
+  };
+
+  componentDidMount() {
+    this.updateChartWidth();
+    window.addEventListener('resize', this.updateChartWidth);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateChartWidth);
   }
 
   // Format the timestamp into a readable string
@@ -57,7 +76,7 @@ class GlucoseGraph extends React.Component {
           }}
         >
           <p>{`Time: ${this.formatTime(timestamp)}`}</p>
-          <p>{`Glucose: ${glucose} mg/dL`}</p>
+          <p>{`Glucose: ${glucose.toFixed(1)} mg/dL`}</p>
         </div>
       );
     }
@@ -117,6 +136,7 @@ class GlucoseGraph extends React.Component {
 
       if (matchingPoint) {
         // Determine event type
+        console.log(eventDetails.carbs + ' , ' + eventDetails.bolus);
         const eventType =
           eventDetails.carbs > 0 && eventDetails.bolus > 0
             ? 'both'
@@ -126,14 +146,15 @@ class GlucoseGraph extends React.Component {
             ? 'bolus'
             : null;
 
+        console.log(`${eventType}`);
+
         if (eventType) {
           // Add the event to the EventTracking instance
-          this.eventTracker.addEvent({
-            timestamp: selectedTimestamp,
-            carbs: eventDetails.carbs,
-            bolus: eventDetails.bolus,
-            type: eventType,
-          });
+          this.eventTracker.addEvent(
+            eventType,
+            selectedTimestamp,
+            matchingPoint
+          );
         }
 
         // Add a carb event if carbs were entered
@@ -189,16 +210,45 @@ class GlucoseGraph extends React.Component {
     if (!this.eventTracker || this.eventTracker.events.length === 0)
       return null;
 
-    return this.eventTracker.events.map((event, index) => (
-      <GraphEvent
-        key={index}
-        eventType={event.type}
-        timestamp={event.timestamp}
-        xPos={this.calculateXPosition(event.timestamp)}
-        onDrag={this.handleEventDrag.bind(this)}
-        event={event}
-      />
-    ));
+    return this.eventTracker.events.map((event, index) => {
+      //const xPos = this.calculateXPosition(event.time);
+      const xPos = this.state.clickPosition.x;
+
+      return (
+        <GraphEvent
+          key={index}
+          eventType={event.type}
+          timestamp={event.dataPoint.time}
+          initialTime={xPos}
+          onDrag={this.handleEventDrag.bind(this)}
+          event={event}
+        />
+      );
+    });
+  }
+
+  calculateXPosition(datetimeValue) {
+    // Ensure there's data to base the calculation on
+    if (!this.props.data || this.props.data.length === 0) return 0;
+
+    // Convert the incoming datetime value and the start time to Date objects.
+    const eventTime =
+      datetimeValue instanceof Date ? datetimeValue : new Date(datetimeValue);
+    const startTime = new Date(this.props.data[0].timestamp);
+
+    // Calculate the difference in minutes
+    const normalizedTime = Math.round((eventTime - startTime) / (1000 * 60));
+    console.log(`Normalized time (minutes from start): ${normalizedTime}`);
+
+    const { chartWidth } = this.state;
+    console.log(`chart width: ${chartWidth}`);
+    // Map the normalized time to pixels; here 1440 represents the total minutes in 24 hours.
+    let xPos = (normalizedTime / 1440) * chartWidth;
+    console.log(`Calculated X position (before offset): ${xPos}`);
+
+    // Adjust for any left margin offset (if your XAxis starts, for example, 20px in)
+    const leftOffset = 20;
+    return xPos + leftOffset;
   }
 
   render() {
@@ -225,51 +275,57 @@ class GlucoseGraph extends React.Component {
         >
           Glucose Levels Over Time
         </Typography>
-        <ResponsiveContainer width='100%' height={300}>
-          <LineChart
-            data={processedData}
-            onClick={this.handleGraphClick.bind(this)}
-            margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
-          >
-            <CartesianGrid strokeDasharray='3 3' stroke='#444' />
-            <XAxis
-              dataKey='normalizedTime'
-              type='number'
-              domain={[0, 1440]} // 1440 minutes in 24 hours
-              tickCount={25}
-              tickFormatter={(tick) => `${Math.floor(tick / 60)}:00`}
-              label={{
-                value: 'Time (hours)',
-                position: 'insideBottom',
-                offset: -20,
-                fill: '#ffffff',
-              }}
-              tick={{ fill: '#ffffff' }}
-            />
-            <YAxis
-              domain={[0, 450]}
-              label={{
-                value: 'Glucose (mg/dL)',
-                angle: -90,
-                position: 'insideLeft',
-                fill: '#ffffff',
-              }}
-              tick={{ fill: '#ffffff' }}
-            />
-            <Tooltip content={<this.CustomTooltip />} />
-            <Line
-              type='monotone'
-              dataKey='glucose'
-              name='Glucose'
-              stroke='#2adf93'
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 6 }}
-            />
-            {/* Call renderGraphEvents() here to overlay events on the graph */}
+        <div
+          ref={this.chartContainerRef}
+          style={{ position: 'relative', width: '100%', height: 300 }}
+        >
+          <ResponsiveContainer width='100%' height={300}>
+            <LineChart
+              data={processedData}
+              onClick={this.handleGraphClick.bind(this)}
+              margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
+            >
+              <CartesianGrid strokeDasharray='3 3' stroke='#444' />
+              <XAxis
+                dataKey='normalizedTime'
+                type='number'
+                domain={[0, 1440]} // 1440 minutes in 24 hours
+                tickCount={25}
+                tickFormatter={(tick) => `${Math.floor(tick / 60)}:00`}
+                label={{
+                  value: 'Time (hours)',
+                  position: 'insideBottom',
+                  offset: -20,
+                  fill: '#ffffff',
+                }}
+                tick={{ fill: '#ffffff' }}
+              />
+              <YAxis
+                domain={[0, 450]}
+                label={{
+                  value: 'Glucose (mg/dL)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  fill: '#ffffff',
+                }}
+                tick={{ fill: '#ffffff' }}
+              />
+              <Tooltip content={<this.CustomTooltip />} />
+              <Line
+                type='monotone'
+                dataKey='glucose'
+                name='Glucose'
+                stroke='#2adf93'
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
             {this.renderGraphEvents()}
-          </LineChart>
-        </ResponsiveContainer>
+          </ResponsiveContainer>
+
+          {/* Call renderGraphEvents() here to overlay events on the graph */}
+        </div>
 
         {/* Event Dialog */}
         <Dialog
