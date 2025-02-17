@@ -54,18 +54,31 @@ class GlucoseGraph extends React.Component {
   // Custom Tooltip Component
   CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
-      const { timestamp, glucose } = payload[0].payload;
+      const { timestamp, glucose, carbsConsumed, bolusAmount } =
+        payload[0].payload;
+      const glucoseColor = '#2adf93';
+      const bolusColor = '#33C1FF';
+      const carbColor = '#FF5733';
+
       return (
         <div
           style={{
-            backgroundColor: '#555', // Medium gray
+            backgroundColor: '#555',
             padding: '10px',
             borderRadius: '5px',
             color: '#fff',
           }}
         >
+          {bolusAmount > 0 && (
+            <p style={{ color: bolusColor }}>{`Bolus: ${bolusAmount}`}</p>
+          )}
+          {carbsConsumed > 0 && (
+            <p style={{ color: carbColor }}>{`Carbs: ${carbsConsumed}`}</p>
+          )}
+          <p style={{ color: glucoseColor }}>{`Glucose: ${glucose.toFixed(
+            1
+          )} mg/dL`}</p>
           <p>{`Time: ${this.formatTime(timestamp)}`}</p>
-          <p>{`Glucose: ${glucose.toFixed(1)} mg/dL`}</p>
         </div>
       );
     }
