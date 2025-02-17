@@ -113,45 +113,48 @@ class GlucoseGraph extends React.Component {
       return (t - baseTime) / (1000 * 60);
     };
 
-    const getRandomColor = () => {
-      const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
+    const colorPalette = [
+      '#AEDFF7',
+      '#FFE4B5',
+      '#C1FFC1',
+      '#FFD1DC',
+      '#E0BBE4',
+    ];
+
+    const getColorForZone = (zoneIndex) => {
+      return colorPalette[zoneIndex % colorPalette.length];
     };
 
     if (!data || data.length === 0) return [];
-
     const zones = [];
-    // Use the first datapoint's timestamp as the base for normalization
     const baseTime = new Date(data[0].timestamp).getTime();
-    // Initialize the first zone
     let currentZone = {
       value: data[0][key],
       start: normalizeTime(data[0].timestamp, baseTime),
-      color: getRandomColor(), // assign a random color
+      // color will be assigned later based on zone index
+      color: null,
     };
 
-    // Loop through the datapoints
     for (let i = 1; i < data.length; i++) {
-      const normalizedTime = normalizeTime(data[i].timestamp, baseTime);
-      // When the value changes, end the current zone and push it
+      const normalized = normalizeTime(data[i].timestamp, baseTime);
       if (data[i][key] !== currentZone.value) {
         currentZone.end = normalizeTime(data[i - 1].timestamp, baseTime);
         zones.push(currentZone);
-        // Start a new zone with a new random color
         currentZone = {
           value: data[i][key],
-          start: normalizedTime,
-          color: getRandomColor(),
+          start: normalized,
+          color: null,
         };
       }
     }
-    // Close off the last zone
     currentZone.end = normalizeTime(data[data.length - 1].timestamp, baseTime);
     zones.push(currentZone);
+
+    // Assign a consistent color to each zone based on its index.
+    zones.forEach((zone, idx) => {
+      zone.color = getColorForZone(idx);
+    });
+
     return zones;
   };
 

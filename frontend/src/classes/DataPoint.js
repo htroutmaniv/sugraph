@@ -2,7 +2,7 @@ import ActivityLevels from '../enums/ActivityLevels';
 
 export class DataPoint {
   constructor({
-    glucose = 280,
+    glucose = 150,
     carbsConsumed = null,
     carbsOnBoard = 0,
     insulinOnBoard = 0,
