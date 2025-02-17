@@ -1,6 +1,5 @@
 import React from 'react';
 import Draggable from 'react-draggable'; // For drag handling
-import { shiftLeft } from 'three/tsl';
 
 class GraphEvent extends React.Component {
   constructor(props) {
