@@ -96,15 +96,9 @@ class App extends Component {
       );
 
       if (matchingPoint) {
-        // Add a carb event if carbs were entered
-        if (eventDetails.carbs > 0) {
-          matchingPoint.carbsConsumed = eventDetails.carbs;
-        }
+        matchingPoint.carbsConsumed = eventDetails.carbs;
 
-        // Add a bolus event if insulin was entered
-        if (eventDetails.bolus > 0) {
-          matchingPoint.bolusAmount = eventDetails.bolus;
-        }
+        matchingPoint.bolusAmount = eventDetails.bolus;
 
         // Re-evaluate the timeline starting from the affected DataPoint
         dataPointEvaluator.evaluateTimeline(timeline);
@@ -160,7 +154,9 @@ class App extends Component {
             name='bolus'
             value={this.state.bolus}
             onChange={this.handleInputChange}
-            InputLabelProps={{ sx: { color: 'white' } }}
+            slotProps={{
+              inputLabel: { sx: { color: '#33C1FF' } },
+            }}
             sx={textFieldSx}
           />
           <TextField
@@ -169,7 +165,9 @@ class App extends Component {
             name='carbs'
             value={this.state.carbs}
             onChange={this.handleInputChange}
-            InputLabelProps={{ sx: { color: 'white' } }}
+            slotProps={{
+              inputLabel: { sx: { color: '#FF5733' } },
+            }}
             sx={textFieldSx}
           />
           <TextField
@@ -180,7 +178,7 @@ class App extends Component {
             onChange={this.handleInputChange}
             slotProps={{
               input: { readOnly: true },
-              inputLabel: { sx: { color: 'white' } },
+              inputLabel: { sx: { color: '#2adf93' } },
             }}
             sx={textFieldSx}
           />

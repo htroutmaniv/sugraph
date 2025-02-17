@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceDot,
 } from 'recharts';
 import { Box, Typography } from '@mui/material';
 import GraphEvent from './GraphEvent';
@@ -240,6 +241,28 @@ class GlucoseGraph extends React.Component {
                 dot={false}
                 activeDot={{ r: 6 }}
               />
+
+              {/* Render reference dots for events */}
+              {processedData.map((point, index) => {
+                let fill = null;
+                if (point.bolusAmount > 0 && point.carbsConsumed > 0) {
+                  fill = '#8D33FF'; // Purple for both events
+                } else if (point.bolusAmount > 0) {
+                  fill = '#33C1FF'; // Blue for bolus only
+                } else if (point.carbsConsumed > 0) {
+                  fill = '#FF5733'; // Red for carbs only
+                }
+                return fill ? (
+                  <ReferenceDot
+                    key={`ref-${index}`}
+                    x={point.normalizedTime}
+                    y={point.glucose}
+                    r={5}
+                    fill={fill}
+                    stroke='none'
+                  />
+                ) : null;
+              })}
             </LineChart>
             {this.renderGraphEvents()}
           </ResponsiveContainer>
