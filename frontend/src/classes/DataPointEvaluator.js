@@ -30,6 +30,22 @@ class DataPointEvaluator {
 
   // Evaluate a timeline of DataPoints sequentially
   evaluateTimeline(timeline) {
+    //clear out old carb/bolus event data
+    this.cobCalculator.carbMap.clear();
+    this.iobCalculator.bolusMap.clear();
+
+    //populate carb and bolus event maps
+    for (let i = 1; i < timeline.length; i++) {
+      const currentPoint = timeline[i];
+
+      if (currentPoint.carbsConsumed > 0) {
+        this.cobCalculator.addCarbEvent(currentPoint);
+      }
+      if (currentPoint.bolusAmount > 0) {
+        this.iobCalculator.addBolusEvent(currentPoint);
+      }
+    }
+
     for (let i = 1; i < timeline.length; i++) {
       const currentPoint = timeline[i];
       const previousPoint = timeline[i - 1];

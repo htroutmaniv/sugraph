@@ -96,41 +96,14 @@ class App extends Component {
       );
 
       if (matchingPoint) {
-        // Determine event type
-        const eventType =
-          eventDetails.carbs > 0 && eventDetails.bolus > 0
-            ? 'both'
-            : eventDetails.carbs > 0
-            ? 'carbs'
-            : eventDetails.bolus > 0
-            ? 'bolus'
-            : null;
-
-        if (eventType) {
-          // Add the event to the EventTracking instance (assume this.eventTracker is available)
-          this.eventTracker.addEvent(
-            eventType,
-            selectedTimestamp,
-            matchingPoint
-          );
-        }
-
         // Add a carb event if carbs were entered
         if (eventDetails.carbs > 0) {
           matchingPoint.carbsConsumed = eventDetails.carbs;
-          dataPointEvaluator.cobCalculator.addCarb(
-            selectedTimestamp,
-            eventDetails.carbs
-          );
         }
 
         // Add a bolus event if insulin was entered
         if (eventDetails.bolus > 0) {
           matchingPoint.bolusAmount = eventDetails.bolus;
-          dataPointEvaluator.iobCalculator.addBolus(
-            selectedTimestamp,
-            eventDetails.bolus
-          );
         }
 
         // Re-evaluate the timeline starting from the affected DataPoint

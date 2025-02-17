@@ -174,7 +174,6 @@ class GlucoseGraph extends React.Component {
 
   render() {
     const { data } = this.props;
-    const { dialogOpen, eventDetails } = this.state;
 
     // Process data to add normalizedTime
     const processedData = this.processData(data);

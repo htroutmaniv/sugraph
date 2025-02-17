@@ -60,16 +60,6 @@ class BolusEvent {
 
     return unitsPerMinute;
   }
-
-  testIOBNormalization(insulinActionDuration) {
-    let totalIOB = 0;
-    for (let t = 0; t <= insulinActionDuration; t += 1) {
-      const currentTime = this.timestamp.getTime() + t * 60 * 1000;
-      const effect = this.calculateActivity(currentTime, insulinActionDuration);
-      totalIOB += effect;
-    }
-    console.log(`Total IOB over ${insulinActionDuration} minutes: ${totalIOB}`);
-  }
 }
 
 class IOBCalculator {
@@ -87,22 +77,15 @@ class IOBCalculator {
     this.insulinActionDuration = durationInMinutes;
   }
 
-  addBolus(bolusId, bolusAmount) {
+  addBolusEvent(dataPoint) {
+    const { timestamp, bolusAmount } = dataPoint;
+    const bolusId = timestamp;
+
     const bolusEvent = new BolusEvent(bolusId, bolusAmount);
     this.bolusMap.set(bolusId, bolusEvent);
-    bolusEvent.testIOBNormalization(this.insulinActionDuration, 60);
-  }
-
-  removeExpiredBoluses(currentTime) {
-    for (const [bolusId, bolusEvent] of this.bolusMap.entries()) {
-      if (bolusEvent.isExpired(currentTime, this.insulinActionDuration)) {
-        this.bolusMap.delete(bolusId);
-      }
-    }
   }
 
   calculateTotalActivity(currentTime) {
-    //this.removeExpiredBoluses(currentTime);
     return Array.from(this.bolusMap.values())
       .map((bolus) =>
         bolus.calculateActivity(currentTime, this.insulinActionDuration)

@@ -5,7 +5,6 @@ class CarbEvent {
     this.timestamp = timestamp || new Date();
     this.amount = amount;
     this.carbProfile = carbProfile;
-    console.log(carbProfile);
   }
 
   isExpired(currentTime, absorptionDuration) {
@@ -76,24 +75,15 @@ class COBCalculator {
 
   //carbId is the timestamp for now
   // TODO: add carbProfile parameter to allow switching between glycemic index impacts
-  addCarb(carbId, carbAmount) {
-    console.log(`ADDING CARBS: ${carbAmount}`);
-    const carbEvent = new CarbEvent(carbId, carbAmount);
-    this.carbMap.set(carbId, carbEvent);
-    console.log(`carbMap ${this.carbMap}`);
-  }
+  addCarbEvent(dataPoint) {
+    const { timestamp, carbsConsumed } = dataPoint;
+    const carbId = timestamp;
 
-  removeExpiredCarbs(currentTime) {
-    for (const [carbId, carbEvent] of this.carbMap.entries()) {
-      if (carbEvent.isExpired(currentTime, this.absorptionDuration)) {
-        this.carbMap.delete(carbId);
-      }
-    }
+    const carbEvent = new CarbEvent(carbId, carbsConsumed);
+    this.carbMap.set(carbId, carbEvent);
   }
 
   calculateTotalCarbActivity(currentTime) {
-    //this.removeExpiredCarbs(currentTime);
-
     return Array.from(this.carbMap.values())
       .map((carb) => carb.calculateCarbActivity(currentTime))
       .reduce((total, contribution) => total + contribution, 0);
