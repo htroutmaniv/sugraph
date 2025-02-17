@@ -8,17 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import {
-  Box,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-} from '@mui/material';
-import EventTracking from '../classes/EventTracking';
+import { Box, Typography } from '@mui/material';
 import GraphEvent from './GraphEvent';
 
 class GlucoseGraph extends React.Component {
@@ -34,8 +24,6 @@ class GlucoseGraph extends React.Component {
     };
 
     this.chartContainerRef = React.createRef();
-
-    this.eventTracker = new EventTracking();
   }
 
   updateChartWidth = () => {
@@ -101,6 +89,10 @@ class GlucoseGraph extends React.Component {
 
   // Handle graph click to select a timestamp for adding an event
   handleGraphClick(e) {
+    const { onChartClick } = this.props;
+    if (onChartClick) {
+      onChartClick(e);
+    }
     if (e && e.activeLabel !== null) {
       const { data } = this.props;
       const clickedTime = e.activeLabel;
@@ -111,80 +103,9 @@ class GlucoseGraph extends React.Component {
 
       this.setState({
         selectedTimestamp: clickedTimestamp,
-        dialogOpen: true,
         clickPosition: { x: e.chartX, y: e.chartY }, // Track click location
       });
     }
-  }
-
-  // Handle the addition of carb/bolus events
-  handleEventSubmit() {
-    const { data, dataPointEvaluator } = this.props;
-    const { selectedTimestamp, eventDetails } = this.state;
-    const timeline = data;
-
-    if (!Array.isArray(timeline)) {
-      console.error('Timeline is not an array.');
-      return;
-    }
-
-    if (selectedTimestamp) {
-      // Find and update the matching DataPoint
-      const matchingPoint = timeline.find(
-        (point) => point.timestamp.getTime() === selectedTimestamp.getTime()
-      );
-
-      if (matchingPoint) {
-        // Determine event type
-        console.log(eventDetails.carbs + ' , ' + eventDetails.bolus);
-        const eventType =
-          eventDetails.carbs > 0 && eventDetails.bolus > 0
-            ? 'both'
-            : eventDetails.carbs > 0
-            ? 'carbs'
-            : eventDetails.bolus > 0
-            ? 'bolus'
-            : null;
-
-        console.log(`${eventType}`);
-
-        if (eventType) {
-          // Add the event to the EventTracking instance
-          this.eventTracker.addEvent(
-            eventType,
-            selectedTimestamp,
-            matchingPoint
-          );
-        }
-
-        // Add a carb event if carbs were entered
-        if (eventDetails.carbs > 0) {
-          dataPointEvaluator.cobCalculator.addCarb(
-            selectedTimestamp,
-            eventDetails.carbs
-          );
-        }
-
-        // Add a bolus event if insulin was entered
-        if (eventDetails.bolus > 0) {
-          dataPointEvaluator.iobCalculator.addBolus(
-            selectedTimestamp,
-            eventDetails.bolus
-          );
-        }
-
-        // Re-evaluate the timeline starting from the affected DataPoint
-        dataPointEvaluator.evaluateTimeline(timeline);
-
-        // Force the component to re-render to reflect updates
-        this.forceUpdate();
-      } else {
-        console.warn('No matching DataPoint found for the selected timestamp.');
-      }
-    }
-
-    // Close the dialog
-    this.setState({ dialogOpen: false });
   }
 
   handleEventDrag(event, newXPosition) {
@@ -323,111 +244,7 @@ class GlucoseGraph extends React.Component {
             </LineChart>
             {this.renderGraphEvents()}
           </ResponsiveContainer>
-
-          {/* Call renderGraphEvents() here to overlay events on the graph */}
         </div>
-
-        {/* Event Dialog */}
-        <Dialog
-          open={dialogOpen}
-          onClose={() => this.setState({ dialogOpen: false })}
-          PaperProps={{
-            style: {
-              backgroundColor: '#555', // Medium gray background for the dialog box
-              color: '#fff', // White text
-              borderRadius: '8px',
-              padding: '16px',
-            },
-          }}
-          BackdropProps={{
-            style: {
-              backgroundColor: 'transparent', // Remove the overlay background
-            },
-          }}
-          style={{
-            position: 'absolute',
-            top: this.state.clickPosition?.y || '50%', // Position near click
-            left: this.state.clickPosition?.x || '50%',
-            transform: 'translate(-50%, -50%)', // Center around the click
-          }}
-        >
-          <DialogTitle>
-            <Typography
-              variant='h6'
-              style={{ color: '#2adf93', textAlign: 'center' }} // Mint green title
-            >
-              Add Event
-            </Typography>
-          </DialogTitle>
-          <DialogContent>
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2, // Add spacing between text fields
-              }}
-            >
-              <TextField
-                label='Carbs Consumed'
-                type='number'
-                fullWidth
-                value={eventDetails.carbs}
-                onChange={(e) =>
-                  this.setState({
-                    eventDetails: {
-                      ...eventDetails,
-                      carbs: Number(e.target.value),
-                    },
-                  })
-                }
-                slotProps={{
-                  inputLabel: {
-                    style: { color: '#2adf93' }, // Mint green labels
-                  },
-                  input: {
-                    style: { color: '#fff' }, // White text for input
-                  },
-                }}
-              />
-              <TextField
-                label='Bolus Amount'
-                type='number'
-                fullWidth
-                value={eventDetails.bolus}
-                onChange={(e) =>
-                  this.setState({
-                    eventDetails: {
-                      ...eventDetails,
-                      bolus: Number(e.target.value),
-                    },
-                  })
-                }
-                slotProps={{
-                  inputLabel: {
-                    style: { color: '#2adf93' }, // Mint green labels
-                  },
-                  input: {
-                    style: { color: '#fff' }, // White text for input
-                  },
-                }}
-              />
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => this.setState({ dialogOpen: false })}
-              style={{ color: '#2adf93' }} // Mint green button text
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={this.handleEventSubmit.bind(this)}
-              style={{ color: '#2adf93' }} // Mint green button text
-            >
-              Add Event
-            </Button>
-          </DialogActions>
-        </Dialog>
       </Box>
     );
   }
