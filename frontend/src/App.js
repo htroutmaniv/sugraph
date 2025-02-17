@@ -149,6 +149,7 @@ class App extends Component {
           data={this.timeline} // Pass the timeline directly
           dataPointEvaluator={this.initializer.dataPointEvaluator} // Pass evaluator for recalculations
           onChartClick={this.handleChartClick}
+          selectedTimestamp={this.state.selectedTimestamp}
         />
         {/* MUI form beneath the graph */}
         <Box

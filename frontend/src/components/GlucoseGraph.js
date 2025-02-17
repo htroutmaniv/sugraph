@@ -260,7 +260,7 @@ class GlucoseGraph extends React.Component {
   }
 
   render() {
-    const { data } = this.props;
+    const { data, selectedTimestamp } = this.props;
     const { zoneDisplay } = this.state;
     // Process data to add normalizedTime
     const processedData = this.processData(data);
@@ -270,6 +270,17 @@ class GlucoseGraph extends React.Component {
       zones = this.getZonesFromData(processedData, 'insulinSensitivityFactor');
     } else if (zoneDisplay === 'CR') {
       zones = this.getZonesFromData(processedData, 'carbohydrateRatio');
+    }
+
+    let selectedDot = null;
+    if (selectedTimestamp && processedData.length > 0) {
+      const selectedTimeMs = new Date(selectedTimestamp).getTime();
+      selectedDot = processedData.reduce((prev, curr) => {
+        return Math.abs(new Date(curr.timestamp).getTime() - selectedTimeMs) <
+          Math.abs(new Date(prev.timestamp).getTime() - selectedTimeMs)
+          ? curr
+          : prev;
+      });
     }
 
     return (
@@ -351,6 +362,18 @@ class GlucoseGraph extends React.Component {
                 dot={false}
                 activeDot={{ r: 6 }}
               />
+
+              {/* Render a golden yellow reference dot at the selected datapoint */}
+              {selectedDot && (
+                <ReferenceDot
+                  x={selectedDot.normalizedTime}
+                  y={selectedDot.glucose}
+                  r={8}
+                  fill='#FFD700' // golden yellow
+                  stroke='#FFD700'
+                />
+              )}
+
               {/* Render reference dots for events */}
               {processedData.map((point, index) => {
                 let fill = null;
