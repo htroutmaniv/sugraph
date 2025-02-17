@@ -85,6 +85,14 @@ class GlucoseGraph extends React.Component {
     return null;
   };
 
+  formatTime(timestamp) {
+    return new Date(timestamp).toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  }
+
   // Process data to include normalizedTime
   processData(data) {
     if (!data || data.length === 0) return [];

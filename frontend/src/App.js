@@ -45,8 +45,12 @@ class App extends Component {
         carbs: datapoint.carbsConsumed || 0,
         glucose: datapoint.glucose.toFixed(1) || '',
         time: datapoint.timestamp
-          ? new Date(datapoint.timestamp).toLocaleTimeString()
+          ? new Date(datapoint.timestamp).toLocaleTimeString(undefined, {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
           : '',
+
         selectedTimestamp: datapoint.timestamp,
       });
     }
