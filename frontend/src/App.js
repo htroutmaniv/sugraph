@@ -10,8 +10,19 @@ class App extends Component {
 
     // Initialize the system
     this.initializer = new Initializer({
-      isfSchedule: [{ time: '00:00', isf: 50 }],
-      crSchedule: [{ time: '00:00', cr: 10 }],
+      isfSchedule: [
+        { time: '00:00', isf: 44 },
+        { time: '08:00', isf: 40 },
+        { time: '10:00', isf: 31 },
+        { time: '12:00', isf: 34 },
+        { time: '16:00', isf: 45 },
+      ],
+      crSchedule: [
+        { time: '00:00', cr: 9.2 },
+        { time: '08:00', cr: 6 },
+        { time: '12:00', cr: 7.1 },
+        { time: '15:00', cr: 9.5 },
+      ],
     });
 
     // Generate and prepare the timeline

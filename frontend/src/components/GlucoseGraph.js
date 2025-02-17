@@ -8,8 +8,17 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceDot,
+  ReferenceArea,
 } from 'recharts';
-import { Box, Typography } from '@mui/material';
+import {
+  Box,
+  Typography,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+} from '@mui/material';
 import GraphEvent from './GraphEvent';
 
 class GlucoseGraph extends React.Component {
@@ -22,10 +31,14 @@ class GlucoseGraph extends React.Component {
       selectedTimestamp: null,
       eventDetails: { carbs: 0, bolus: 0 },
       chartWidth: 0,
+      zoneDisplay: 'None',
     };
 
     this.chartContainerRef = React.createRef();
   }
+  handleZoneChange = (event) => {
+    this.setState({ zoneDisplay: event.target.value });
+  };
 
   updateChartWidth = () => {
     if (this.chartContainerRef.current) {
@@ -92,6 +105,55 @@ class GlucoseGraph extends React.Component {
       hour12: true,
     });
   }
+
+  // Revised getZonesFromData function
+  getZonesFromData = (data, key) => {
+    const normalizeTime = (timestamp, baseTime) => {
+      const t = new Date(timestamp).getTime();
+      return (t - baseTime) / (1000 * 60);
+    };
+
+    const getRandomColor = () => {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    };
+
+    if (!data || data.length === 0) return [];
+
+    const zones = [];
+    // Use the first datapoint's timestamp as the base for normalization
+    const baseTime = new Date(data[0].timestamp).getTime();
+    // Initialize the first zone
+    let currentZone = {
+      value: data[0][key],
+      start: normalizeTime(data[0].timestamp, baseTime),
+      color: getRandomColor(), // assign a random color
+    };
+
+    // Loop through the datapoints
+    for (let i = 1; i < data.length; i++) {
+      const normalizedTime = normalizeTime(data[i].timestamp, baseTime);
+      // When the value changes, end the current zone and push it
+      if (data[i][key] !== currentZone.value) {
+        currentZone.end = normalizeTime(data[i - 1].timestamp, baseTime);
+        zones.push(currentZone);
+        // Start a new zone with a new random color
+        currentZone = {
+          value: data[i][key],
+          start: normalizedTime,
+          color: getRandomColor(),
+        };
+      }
+    }
+    // Close off the last zone
+    currentZone.end = normalizeTime(data[data.length - 1].timestamp, baseTime);
+    zones.push(currentZone);
+    return zones;
+  };
 
   // Process data to include normalizedTime
   processData(data) {
@@ -196,9 +258,16 @@ class GlucoseGraph extends React.Component {
 
   render() {
     const { data } = this.props;
-
+    const { zoneDisplay } = this.state;
     // Process data to add normalizedTime
     const processedData = this.processData(data);
+
+    let zones = [];
+    if (zoneDisplay === 'ISF') {
+      zones = this.getZonesFromData(processedData, 'insulinSensitivityFactor');
+    } else if (zoneDisplay === 'CR') {
+      zones = this.getZonesFromData(processedData, 'carbohydrateRatio');
+    }
 
     return (
       <Box
@@ -253,6 +322,23 @@ class GlucoseGraph extends React.Component {
                 tick={{ fill: '#ffffff' }}
               />
               <Tooltip content={<this.CustomTooltip />} />
+              {/* Render ISF zones – using, say, a light blue color */}
+              {zoneDisplay !== 'None' &&
+                zones.map((zone, idx) => (
+                  <ReferenceArea
+                    key={`zone-${idx}`}
+                    x1={zone.start}
+                    x2={zone.end}
+                    fill={zone.color}
+                    opacity={0.2}
+                    label={{
+                      value: `${zoneDisplay}: ${zone.value}`,
+                      position: 'top',
+                      fill: '#fff',
+                      fontSize: 12,
+                    }}
+                  />
+                ))}
               <Line
                 type='monotone'
                 dataKey='glucose'
@@ -262,7 +348,6 @@ class GlucoseGraph extends React.Component {
                 dot={false}
                 activeDot={{ r: 6 }}
               />
-
               {/* Render reference dots for events */}
               {processedData.map((point, index) => {
                 let fill = null;
@@ -285,8 +370,72 @@ class GlucoseGraph extends React.Component {
                 ) : null;
               })}
             </LineChart>
+
             {this.renderGraphEvents()}
           </ResponsiveContainer>
+
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              display: 'flex',
+              alignItems: 'center',
+              padding: '4px 8px',
+              borderRadius: '4px',
+            }}
+          >
+            {/* radio buttons */}
+            <Typography variant='body2' sx={{ color: 'white', mr: 1 }}>
+              Display Zones:
+            </Typography>
+            <RadioGroup
+              row
+              value={zoneDisplay}
+              onChange={this.handleZoneChange}
+              sx={{
+                // Ensure labels are white
+                '.MuiFormControlLabel-label': { color: 'white' },
+              }}
+            >
+              <FormControlLabel
+                value='ISF'
+                control={
+                  <Radio
+                    sx={{
+                      color: '#2adf93',
+                      '&.Mui-checked': { color: '#2adf93' },
+                    }}
+                  />
+                }
+                label='ISF'
+              />
+              <FormControlLabel
+                value='CR'
+                control={
+                  <Radio
+                    sx={{
+                      color: '#2adf93',
+                      '&.Mui-checked': { color: '#2adf93' },
+                    }}
+                  />
+                }
+                label='CR'
+              />
+              <FormControlLabel
+                value='None'
+                control={
+                  <Radio
+                    sx={{
+                      color: '#2adf93',
+                      '&.Mui-checked': { color: '#2adf93' },
+                    }}
+                  />
+                }
+                label='None'
+              />
+            </RadioGroup>
+          </Box>
         </div>
       </Box>
     );
