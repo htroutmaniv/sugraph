@@ -178,7 +178,10 @@ class App extends Component {
             name='glucose'
             value={this.state.glucose}
             onChange={this.handleInputChange}
-            InputLabelProps={{ sx: { color: 'white' } }}
+            slotProps={{
+              input: { readOnly: true },
+              inputLabel: { sx: { color: 'white' } },
+            }}
             sx={textFieldSx}
           />
           <TextField
@@ -187,9 +190,13 @@ class App extends Component {
             name='time'
             value={this.state.time}
             onChange={this.handleInputChange}
-            InputLabelProps={{ sx: { color: 'white' } }}
+            slotProps={{
+              input: { readOnly: true },
+              inputLabel: { sx: { color: 'white' } },
+            }}
             sx={textFieldSx}
           />
+
           <Button variant='contained' onClick={this.handleAddEvent}>
             Add Event
           </Button>
