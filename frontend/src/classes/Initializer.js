@@ -12,7 +12,7 @@ class Initializer {
   }
 
   // Generate a timeline of DataPoints for a 24-hour period
-  generateTimeline(startTime = new Date(), intervalMinutes = 5) {
+  generateTimeline(startTime = new Date(), intervalMinutes = 1) {
     startTime.setHours(0, 0, 0, 0);
     const timeline = [];
     for (let i = 0; i < 24 * 60; i += intervalMinutes) {

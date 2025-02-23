@@ -14,7 +14,7 @@ export class DataPoint {
     activityLevel = ActivityLevels.NONE,
     insulinSensitivityFactor = 50, // ISF: How much 1 unit of insulin lowers glucose (mg/dL)
     carbohydrateRatio = 10, // CR: How many grams of carbs 1 unit of insulin offsets
-    simulationDuration = 5,
+    simulationDuration = 1,
   }) {
     this.id = id;
     this.glucose = glucose;
