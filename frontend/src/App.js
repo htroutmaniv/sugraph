@@ -254,9 +254,9 @@ class App extends Component {
     const textFieldSx = {
       input: { color: 'white' },
       '& .MuiOutlinedInput-root': {
-        '& fieldset': { borderColor: 'white' },
-        '&:hover fieldset': { borderColor: 'white' },
-        '&.Mui-focused fieldset': { borderColor: 'white' },
+        '& fieldset': { borderColor: 'white' }, // Default border color
+        '&:hover fieldset': { borderColor: 'white' }, // Hover effect
+        '&.Mui-focused fieldset': { borderColor: 'white' }, // Focus effect
       },
     };
 
@@ -265,119 +265,160 @@ class App extends Component {
         <Typography variant='h3' align='center' sx={{ color: '#2adf93' }}>
           Sugraph
         </Typography>
+
+        {/* Glucose Graph */}
         <GlucoseGraph
           data={this.timeline} // Pass the timeline directly
           dataPointEvaluator={this.initializer.dataPointEvaluator} // Pass evaluator for recalculations
           onChartClick={this.handleChartClick}
           selectedTimestamp={this.state.selectedTimestamp}
         />
-        {/* MUI form beneath the graph */}
+
+        {/* Layout Container */}
         <Box
           sx={{
             mt: 4,
             display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            maxWidth: '400px',
-            mx: 'auto',
-            alignItems: 'flex-start', // Left-justify components
-            ml: 2,
+            flexDirection: 'row', // Keep sections aligned horizontally
+            gap: 4,
+            maxWidth: '1000px',
+            mx: 4,
+            alignItems: 'flex-start', // Align sections to the top
           }}
         >
-          <TextField
-            label='Bolus Amount'
-            variant='outlined'
-            name='bolus'
-            value={this.state.bolus}
-            onChange={this.handleInputChange}
-            slotProps={{
-              inputLabel: { sx: { color: '#33C1FF' } },
+          {/* Left Section: Text Fields and Add Event Button */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              flex: 1,
+              alignItems: 'flex-start',
             }}
-            sx={textFieldSx}
-          />
-          <TextField
-            label='Carbs Consumed'
-            variant='outlined'
-            name='carbs'
-            value={this.state.carbs}
-            onChange={this.handleInputChange}
-            slotProps={{
-              inputLabel: { sx: { color: '#FF5733' } },
-            }}
-            sx={textFieldSx}
-          />
-          <TextField
-            label='Glucose'
-            variant='outlined'
-            name='glucose'
-            value={this.state.glucose}
-            onChange={this.handleInputChange}
-            slotProps={{
-              input: { readOnly: true },
-              inputLabel: { sx: { color: '#2adf93' } },
-            }}
-            sx={textFieldSx}
-          />
-          <TextField
-            label='Time'
-            variant='outlined'
-            name='time'
-            value={this.state.time}
-            onChange={this.handleInputChange}
-            slotProps={{
-              input: { readOnly: true },
-              inputLabel: { sx: { color: 'white' } },
-            }}
-            sx={textFieldSx}
-          />
-
-          <Button variant='contained' onClick={this.handleAddEvent}>
-            Add Event
-          </Button>
-
-          <Button
-            variant='contained'
-            color='primary'
-            onClick={this.handleUpload}
           >
-            Upload
-          </Button>
-
-          {/* Date Picker for selecting import date */}
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <MobileDatePicker
-              label='Select Date'
-              value={this.state.selectedDate}
-              onChange={this.handleDateChange}
+            <TextField
+              label='Bolus Amount'
+              variant='outlined'
+              name='bolus'
+              value={this.state.bolus}
+              onChange={this.handleInputChange}
               slotProps={{
-                textField: {
-                  variant: 'outlined',
-                  fullWidth: true,
-                  sx: {
-                    input: { color: 'white' }, // Text color
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': { borderColor: 'white' }, // Default border color
-                      '&:hover fieldset': { borderColor: 'white' }, // Hover effect
-                      '&.Mui-focused fieldset': { borderColor: 'white' }, // Focus effect
-                    },
-                    label: { color: 'white' }, // Label text color
-                    '& .MuiInputLabel-root': {
-                      color: 'white',
-                      '&.Mui-focused': { color: 'white' }, // Label color when focused
-                    },
-                  },
-                },
+                inputLabel: { sx: { color: '#33C1FF' } },
               }}
+              sx={textFieldSx}
             />
-          </LocalizationProvider>
+            <TextField
+              label='Carbs Consumed'
+              variant='outlined'
+              name='carbs'
+              value={this.state.carbs}
+              onChange={this.handleInputChange}
+              slotProps={{
+                inputLabel: { sx: { color: '#FF5733' } },
+              }}
+              sx={textFieldSx}
+            />
+            <TextField
+              label='Glucose'
+              variant='outlined'
+              name='glucose'
+              value={this.state.glucose}
+              onChange={this.handleInputChange}
+              slotProps={{
+                input: { readOnly: true },
+                inputLabel: { sx: { color: '#2adf93' } },
+              }}
+              sx={textFieldSx}
+            />
+            <TextField
+              label='Time'
+              variant='outlined'
+              name='time'
+              value={this.state.time}
+              onChange={this.handleInputChange}
+              slotProps={{
+                input: { readOnly: true },
+                inputLabel: { sx: { color: 'white' } },
+              }}
+              sx={textFieldSx}
+            />
 
-          <Button
-            variant='contained'
-            color='secondary'
-            onClick={this.handleImport}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 2,
+                flex: 1,
+                alignItems: 'flex-start',
+              }}
+            >
+              <Button
+                variant='contained'
+                color='primary'
+                onClick={this.handleAddEvent}
+              >
+                ADD EVENT
+              </Button>
+
+              <Button
+                variant='contained'
+                color='primary'
+                onClick={this.handleUpload}
+              >
+                UPLOAD
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Right Section: Select Date, Import, and Upload Buttons */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+              alignItems: 'flex-end',
+              mx: 20,
+              mt: 0,
+            }}
           >
-            Import
-          </Button>
+            {/* Date Picker & Import Button aligned to the top */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <MobileDatePicker
+                  label='Select Date'
+                  value={this.state.selectedDate}
+                  onChange={this.handleDateChange}
+                  slotProps={{
+                    textField: {
+                      variant: 'outlined',
+                      sx: {
+                        input: { color: 'white' }, // Text color
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': { borderColor: 'white' }, // Default border color
+                          '&:hover fieldset': { borderColor: 'white' }, // Hover effect
+                          '&.Mui-focused fieldset': { borderColor: 'white' }, // Focus effect
+                        },
+                        label: { color: 'white' }, // Label text color
+                        '& .MuiInputLabel-root': {
+                          color: 'white',
+                          '&.Mui-focused': { color: 'white' }, // Label color when focused
+                        },
+                      },
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <Button
+                variant='contained'
+                color='secondary'
+                sx={{ bgcolor: '#a100ff' }}
+                onClick={this.handleImport}
+              >
+                IMPORT
+              </Button>
+            </Box>
+          </Box>
         </Box>
       </Box>
     );
