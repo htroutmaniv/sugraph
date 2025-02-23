@@ -217,6 +217,12 @@ class App extends Component {
 
     this.timeline = this.initializer.timeline;
 
+    //set the baseline glucose level for the timeline to the first imported data glucose level
+    const baselineGlucose = data[0].Glucose;
+    this.timeline.forEach((dataPoint) => {
+      dataPoint.glucose = baselineGlucose;
+    });
+
     data.forEach((dp) => {
       // Convert imported timestamp to a Date object
       const dpTime = new Date(dp.SimulatedTimestamp).getTime();

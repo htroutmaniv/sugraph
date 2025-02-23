@@ -3,7 +3,7 @@ import ActivityLevels from '../enums/ActivityLevels';
 export class DataPoint {
   constructor({
     id = undefined, //this is the database given id for updating existing data
-    glucose = 150,
+    glucose = 120,
     carbsConsumed = null,
     carbsOnBoard = 0,
     insulinOnBoard = 0,
