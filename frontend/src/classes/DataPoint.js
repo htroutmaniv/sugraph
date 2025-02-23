@@ -2,6 +2,7 @@ import ActivityLevels from '../enums/ActivityLevels';
 
 export class DataPoint {
   constructor({
+    id = undefined, //this is the database given id for updating existing data
     glucose = 150,
     carbsConsumed = null,
     carbsOnBoard = 0,
@@ -15,6 +16,7 @@ export class DataPoint {
     carbohydrateRatio = 10, // CR: How many grams of carbs 1 unit of insulin offsets
     simulationDuration = 5,
   }) {
+    this.id = id;
     this.glucose = glucose;
     this.carbsConsumed = carbsConsumed;
     this.carbsOnBoard = carbsOnBoard;
@@ -27,5 +29,23 @@ export class DataPoint {
     this.carbohydrateRatio = carbohydrateRatio;
     this.insulinActivity = insulinActivity;
     this.simulationDuration = simulationDuration;
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      glucose: this.glucose,
+      carbsConsumed: this.carbsConsumed,
+      carbsOnBoard: this.carbsOnBoard,
+      insulinOnBoard: this.insulinOnBoard,
+      insulinActivity: this.insulinActivity,
+      basalRate: this.basalRate,
+      bolusAmount: this.bolusAmount,
+      timestamp: this.timestamp.toISOString(), // Ensure timestamp is properly formatted
+      activityLevel: this.activityLevel,
+      insulinSensitivityFactor: this.insulinSensitivityFactor,
+      carbohydrateRatio: this.carbohydrateRatio,
+      simulationDuration: this.simulationDuration,
+    };
   }
 }
