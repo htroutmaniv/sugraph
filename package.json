@@ -1,0 +1,45 @@
+{
+  "name": "sugraph",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node src/server/server.js",
+    "build": "webpack --mode production",
+    "watch-client": "webpack --watch --mode development",
+    "server-dev": "nodemon src/server/server.js",
+    "dev": "npm-run-all --parallel watch-client server-dev"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^6.4.6",
+    "@mui/x-date-pickers": "^7.27.1",
+    "axios": "^1.8.1",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "express": "^4.17.1",
+    "mssql": "^11.0.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "recharts": "^2.15.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.9",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "babel-loader": "^10.0.0",
+    "chokidar": "^4.0.3",
+    "concurrently": "^6.2.0",
+    "cross-env": "^7.0.3",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.3",
+    "nodemon": "^2.0.22",
+    "npm-run-all": "^4.1.5",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.0"
+  },
+  "proxy": "http://localhost:3001"
+}

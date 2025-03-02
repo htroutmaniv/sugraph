@@ -1,40 +1,15 @@
 const express = require('express');
-const cors = require('cors');
+const router = express.Router();
 const sql = require('mssql');
-
-const app = express();
-const port = process.env.PORT || 3001;
-
-app.use(cors());
-app.use(express.json()); // Parse JSON bodies
-
-let poolPromise;
-
-async function connectToDatabase() {
-  if (!poolPromise) {
-    poolPromise = sql.connect(dbConfig);
-  }
-  return poolPromise;
-}
-
-// Database configuration
-const dbConfig = {
-  user: 'sa', // Replace with your SQL Server username
-  password: 'YourStrong!Passw0rd', // Replace with your SQL Server password
-  server: 'localhost', // Example: 'localhost' or 'yourserver.database.windows.net'
-  database: 'simulated_data', // Your database name
-  options: {
-    encrypt: false, // Set to true for Azure
-    trustServerCertificate: true, // Required for local development
-  },
-};
+const { connectToDatabase } = require('../config/db');
 
 // API Test Route
-app.get('/api/test', (req, res) => {
+router.get('/test', (req, res) => {
   res.send({ message: 'Backend is working!' });
 });
 
-app.get('/api/get-datapoints', async (req, res) => {
+// Get Datapoints Route
+router.get('/get-datapoints', async (req, res) => {
   try {
     const { startTime, endTime } = req.query;
 
@@ -46,7 +21,6 @@ app.get('/api/get-datapoints', async (req, res) => {
 
     console.log(`Received startTime: ${startTime}, endTime: ${endTime}`);
 
-    // Use the persistent connection
     const pool = await connectToDatabase();
     const request = pool.request();
 
@@ -64,8 +38,8 @@ app.get('/api/get-datapoints', async (req, res) => {
   }
 });
 
-// Route to Process and Add Timeline Data Points
-app.post('/api/add-datapoints', async (req, res) => {
+// Add Datapoints Route
+router.post('/add-datapoints', async (req, res) => {
   try {
     const dataPoints = req.body;
     if (!Array.isArray(dataPoints)) {
@@ -114,7 +88,4 @@ app.post('/api/add-datapoints', async (req, res) => {
   }
 });
 
-// Start Server
-app.listen(port, () => {
-  console.log(`Backend running on port ${port}`);
-});
+module.exports = router;
