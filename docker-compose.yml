@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=production
+    networks:
+      - sugraph-network
+
+  nginx-certbot:
+    build:
+      context: ./nginx_Docker
+      dockerfile: nginx-certbot.dockerfile
+    ports:
+      - '80:80'
+      - '443:443'
+    container_name: nginx
+    restart: always
+    volumes:
+      - './nginx_Docker/nginx/sites-enabled:/etc/nginx/sites-enabled'
+      - './nginx_Docker/nginx-logs:/var/log/nginx'
+      - './nginx_Docker/letsencrypt:/etc/letsencrypt'
+      - './nginx_Docker/certbot:/var/www/certbot'
+    networks:
+      - sugraph-network
+
+networks:
+  sugraph-network:
+    external: true
