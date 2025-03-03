@@ -9,6 +9,18 @@ import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker'; // Impo
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
+const api = axios.create({
+  // Use absolute URL for development, relative for production
+  baseURL:
+    window.location.hostname === 'localhost'
+      ? 'http://localhost:3001/api'
+      : '/api',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -152,10 +164,7 @@ class App extends Component {
 
     if (data.length > 0) {
       try {
-        const response = await axios.post(
-          'http://localhost:3001/api/add-datapoints',
-          data
-        );
+        const response = await api.post('/add-datapoints', data);
         console.log('Upload successful:', response.data);
       } catch (error) {
         console.error('Error uploading timeline:', error);
@@ -174,26 +183,33 @@ class App extends Component {
   handleImport = async () => {
     const { selectedDate } = this.state;
 
-    // Ensure the date is correctly formatted in UTC (ISO 8601 format)
-    const startTime = selectedDate.startOf('day').toISOString();
-    const endTime = selectedDate.endOf('day').toISOString();
-
     try {
-      const response = await axios.get(
-        'http://localhost:3001/api/get-datapoints',
-        {
-          params: { startTime, endTime },
-        }
-      );
+      const startTime = selectedDate.startOf('day').toISOString();
+      const endTime = selectedDate.endOf('day').toISOString();
 
-      if (response.data.length > 0) {
+      // Add debug logging
+      console.log(
+        'Making request to:',
+        api.defaults.baseURL + '/get-datapoints'
+      );
+      console.log('With params:', { startTime, endTime });
+
+      const response = await api.get('/get-datapoints', {
+        params: { startTime, endTime },
+      });
+
+      if (response.data && response.data.length > 0) {
         this.updateTimelineData(response.data);
-        console.log('Imported data:', response.data);
+        console.log('Successfully imported data:', response.data);
       } else {
         console.log('No data available for the selected date.');
       }
     } catch (error) {
-      console.error('Error importing data:', error);
+      console.error('Import error:', {
+        message: error.message,
+        config: error.config, // This will show the full request configuration
+        response: error.response?.data,
+      });
     }
   };
 

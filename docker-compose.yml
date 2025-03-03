@@ -2,13 +2,22 @@ version: '3.8'
 
 services:
   backend:
-    build: .
+    container_name: sugraph-backend
+    build:
+      context: .
+      dockerfile: src/server/Dockerfile
     ports:
       - '3001:3001'
     environment:
       - NODE_ENV=production
+      - DB_SERVER=host.docker.internal
+      - DB_NAME=simulated_data
+      - DB_USER=sa
+      - DB_PASSWORD=YourStrong!Passw0rd
     networks:
       - sugraph-network
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
   nginx-certbot:
     build:

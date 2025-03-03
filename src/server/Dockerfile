@@ -1,4 +1,4 @@
-FROM node:14
+FROM node:18-slim
 
 WORKDIR /app
 
@@ -8,10 +8,10 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy source code
+# Copy the rest of the application
 COPY . .
 
-# Build the React app
+# Build the application
 RUN npm run build
 
 EXPOSE 3001

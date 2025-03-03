@@ -1,1 +1,21 @@
 npm run dev -> this builds the front end and runs the backend which serves the built front end
+
+for production
+docker compose up --build  (the --build is only necessary when code has changed)
+
+optional parameters 
+--build: Rebuilds images if there are changes to the Dockerfile or build context
+--force-recreate: Forces recreation of containers even if their configuration hasn't changed
+
+
+
+TODO:
+Need to integrate the server docker into the sugraph docker network
+
+need to make a page for input data
+
+probably some phone formatting shit
+
+need to hide database passwords and shit
+
+need to ensure data is obfuscated

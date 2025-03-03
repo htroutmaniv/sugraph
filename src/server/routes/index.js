@@ -19,22 +19,38 @@ router.get('/get-datapoints', async (req, res) => {
         .json({ error: 'Missing startTime or endTime parameter' });
     }
 
-    console.log(`Received startTime: ${startTime}, endTime: ${endTime}`);
-
+    console.log('Attempting database connection...');
     const pool = await connectToDatabase();
-    const request = pool.request();
+    console.log('Database connection successful');
 
+    console.log('Creating request with params:', {
+      startTime: new Date(startTime),
+      endTime: new Date(endTime),
+    });
+
+    const request = pool.request();
     request.input('StartTime', sql.DateTime, new Date(startTime));
     request.input('EndTime', sql.DateTime, new Date(endTime));
 
+    console.log('Executing stored procedure...');
     const result = await request.execute('GetDataPointsByTimeRange');
+    console.log('Stored procedure executed successfully');
 
     res.status(200).json(result.recordset);
   } catch (error) {
-    console.error('Error retrieving data points:', error);
-    res
-      .status(500)
-      .json({ error: 'Internal Server Error', details: error.message });
+    // More detailed error logging
+    console.error('Detailed error in get-datapoints:', {
+      message: error.message,
+      stack: error.stack,
+      sqlState: error.sqlState,
+      code: error.code,
+    });
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      details: error.message,
+      code: error.code,
+    });
   }
 });
 
